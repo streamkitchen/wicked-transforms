@@ -123,7 +123,6 @@ class WickedTransforms extends React.Component {
         <TVScreen onRemoveRegion={::this.removeRegion} regions={this.state.regions} scene={this.state.scene} />
         <div className={style.Buttons}>
           <button onClick={::this.addRegion} className={style.PlusButton}>+</button>
-          <button className={style.MinusButton}>-</button>
         </div>
       </div>
     );
@@ -174,9 +173,7 @@ class Region extends React.Component {
   render() {
     const myStyle = this.getStyle();
     return (
-      <div onClick={this.props.onClick} style={myStyle} className={style.Region}>
-        {this.props.region.id}
-      </div>
+      <div onClick={this.props.onClick} style={myStyle} className={style.Region}></div>
     );
   }
 }
