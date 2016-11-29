@@ -12,7 +12,7 @@ module.exports = {
   entry: "./src/wicked-transforms",
   output: {
     filename: "bundle.js", //this is the default name, so you can skip it
-    path: "dist",
+    path: "docs",
     publicPath: ""
   },
   plugins: [
