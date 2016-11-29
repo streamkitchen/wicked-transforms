@@ -6,6 +6,7 @@ import {} from "normalize.css/normalize.css";
 import style from "./wicked-transforms.scss";
 
 const MAX_REGIONS = 4;
+const TRANSITION_SPEED = 300;
 const getPositions = function({count, width, height}) {
   if (count === 0) {
     return [];
@@ -166,8 +167,9 @@ class Region extends React.Component {
     const top = this.pct(this.props.position.y / this.props.scene.height);
     const width = this.pct(this.props.position.width / this.props.scene.width);
     const height = this.pct(this.props.position.height / this.props.scene.height);
+    const transition = `all ${TRANSITION_SPEED} ease`;
 
-    return {backgroundColor, left, top, width, height};
+    return {backgroundColor, left, top, width, height, transition};
   }
 
   render() {
