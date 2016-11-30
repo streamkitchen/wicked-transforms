@@ -7,7 +7,118 @@ import style from "./wicked-transforms.scss";
 
 const MAX_REGIONS = 4;
 const TRANSITION_SPEED = 300;
-const getPositions = function({count, width, height}) {
+
+const transitions = [];
+const addTransition = function(transition) {
+  const {start, startAnim, endAnim, end} = transition;
+  if (!start || !end) {
+    throw new Error("Missing start and end of transition!");
+  }
+  if (startAnim === undefined) {
+    transition.startAnim = start;
+  }
+  if (endAnim === undefined) {
+    transition.endAnim = end;
+  }
+  // Each transition gets a transition and a reversed version of itself
+  transitions.push(transition);
+  const reversed = {
+    name: `${transition.name} (reversed)`,
+    start: transition.end,
+    startAnim: transition.endAnim,
+    endAnim: transition.startAnim,
+    end: transition.start,
+  };
+  transitions.push(reversed);
+};
+
+/**
+ * Convert from our weird array fraction syntax to proper american floats
+ */
+const normalizeRegion = function(region) {
+  const ret = {};
+  ["x", "y", "width", "height"].forEach((name) => {
+    const param = region[name];
+    if (typeof param.length === "number") {
+      if (param.length !== 2) {
+        throw new Error("Invalid state, array syntax is a fraction, should have two params");
+      }
+      const [numerator, denominator] = param;
+      ret[name] = numerator / denominator;
+    }
+    else {
+      ret[name] = region[name];
+    }
+  });
+  return ret;
+};
+
+/**
+ * Given a region, yield an object with {top, left, width, height} strings
+ */
+const getRegionCss = function(region) {
+  region = normalizeRegion(region);
+  return {
+    left: `${region.x}%`,
+    top: `${region.y}%`,
+    width: `${region.width}%`,
+    height: `${region.height}%`,
+  };
+};
+
+// Boring, if we're going to one person they should just appear
+addTransition({
+  name: "0 --> 1",
+  start: [],
+  startAnim: [{
+    x: 0,
+    y: 0,
+    width: 100,
+    height: 100,
+  }],
+  end: [{
+    x: 0,
+    y: 0,
+    width: 100,
+    height: 100,
+  }],
+  defaultSpeed: "0",
+});
+
+// 1 --> 2 split-screen
+addTransition({
+  name: "1 --> 1x2",
+  start: [{
+    x: 0,
+    y: 0,
+    width: 100,
+    height: 100,
+  }],
+  startAnim: [{
+    x: 0,
+    y: 0,
+    width: 100,
+    height: 100,
+  }, {
+    x: 100,
+    y: 0,
+    width: 50,
+    height: 100,
+  }],
+  end: [{
+    x: 0,
+    y: 0,
+    width: 50,
+    height: 100,
+  }, {
+    x: 50,
+    y: 0,
+    width: 50,
+    height: 100,
+  }],
+});
+
+const getPositions = function({count}) {
   if (count === 0) {
     return [];
   }
@@ -15,62 +126,62 @@ const getPositions = function({count, width, height}) {
     return [{
       x: 0,
       y: 0,
-      width: width,
-      height: height,
+      width: 100,
+      height: 100,
     }];
   }
   if (count === 2) {
     return [{
       x: 0,
       y: 0,
-      width: width / 2,
-      height: height,
+      width: 50,
+      height: 100,
     } , {
-      x: width / 2,
+      x: 50,
       y: 0,
-      width: width / 2,
-      height: height,
+      width: 50,
+      height: 100,
     }];
   }
   if (count === 3) {
     return [{
       x: 0,
       y: 0,
-      width: width / 3,
-      height: height,
+      width: [100, 3],
+      height: 100,
     }, {
-      x: width / 3,
+      x: [100, 3],
       y: 0,
-      width: width / 3,
-      height: height,
+      width: [100, 3],
+      height: 100,
     }, {
-      x: (width / 3) * 2,
+      x: [100 * 2, 3],
       y: 0,
-      width: width / 3,
-      height: height,
+      width: [100, 3],
+      height: 100,
     }];
   }
   if (count === 4) {
     return [{
       x: 0,
       y: 0,
-      width: width / 2,
-      height: height / 2,
+      width: 50,
+      height: 50,
     }, {
-      x: width / 2,
+      x: 50,
       y: 0,
-      width: width / 2,
-      height: height / 2,
+      width: 50,
+      height: 50,
     }, {
       x: 0,
-      y: height / 2,
-      width: width / 2,
-      height: height / 2,
+      y: 50,
+      width: 50,
+      height: 50,
     }, {
-      x: width / 2,
-      y: height / 2,
-      width: width / 2,
-      height: height / 2,
+      x: 50,
+      y: 50,
+      width: 50,
+      height: 50,
     }];
   }
 };
@@ -162,14 +273,14 @@ class Region extends React.Component {
   }
 
   getStyle() {
+    const style = getRegionCss(this.props.position);
     const backgroundColor = this.props.region.backgroundColor;
-    const left = this.pct(this.props.position.x / this.props.scene.width);
-    const top = this.pct(this.props.position.y / this.props.scene.height);
-    const width = this.pct(this.props.position.width / this.props.scene.width);
-    const height = this.pct(this.props.position.height / this.props.scene.height);
-    const transition = `all ${TRANSITION_SPEED} ease`;
+    const transitionDelay = "0s";
+    const transitionDuration = `${TRANSITION_SPEED}ms`;
+    const transitionProperty = "all";
+    const transitionTimingFunction = "ease";
 
-    return {backgroundColor, left, top, width, height, transition};
+    return {...style, backgroundColor, transitionDelay, transitionDuration, transitionProperty, transitionTimingFunction};
   }
 
   render() {
