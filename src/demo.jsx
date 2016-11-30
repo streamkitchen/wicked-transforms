@@ -41,15 +41,23 @@ class WickedTransforms extends React.Component {
     if (this.state.regions.length >= MAX_REGIONS) {
       return;
     }
-    const regions = this.state.regions.concat([{
+    let regions = this.state.regions.concat([{
       id: uid(),
       backgroundColor: this.randomColor(),
     }]);
-    this.setState({regions});
+    this.resetRegions(regions);
   }
 
   removeRegion(id) {
     const regions = this.state.regions.filter(r => r.id !== id);
+    this.resetRegions(regions);
+  }
+
+  resetRegions(newRegions) {
+    const positions = getPositions({count: newRegions.length});
+    const regions = newRegions.map((r, i) => {
+      return {...r, ...positions[i]};
+    });
     this.setState({regions});
   }
 
@@ -74,23 +82,15 @@ class TVScreen extends React.Component {
   }
 
   componentWillMount() {
-    this.setRegions(this.props.regions);
+    this.setState({regions: this.props.regions});
   }
 
   componentWillReceiveProps(nextProps) {
-    this.setRegions(nextProps.regions);
+    this.setState({regions: nextProps.regions});
   }
 
-  removeRegion(region) {
-    this.props.onRemoveRegion(region);
-  }
-
-  setRegions(newRegions) {
-    const positions = getPositions({count: newRegions.length});
-    const regions = newRegions.map((r, i) => {
-      return {...r, ...positions[i]};
-    });
-    this.setState({regions});
+  removeRegion(id) {
+    this.props.onRemoveRegion(id);
   }
 
   rengerRegions() {
