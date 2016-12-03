@@ -6,9 +6,11 @@ import {} from "normalize.css/normalize.css";
 import style from "./demo.scss";
 import wicked from "./wicked-transitions.js";
 import getPositions from "./get-positions";
+import debug from "debug";
+
+const log = debug("sk:wicked-transitions-demo");
 
 const MAX_REGIONS = 4;
-const TRANSITION_SPEED = 300;
 
 let _id = 0;
 const uid = function() {
@@ -86,7 +88,24 @@ class TVScreen extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    this.setState({regions: nextProps.regions});
+    const transition = wicked.transition(this.state.regions, nextProps.regions);
+    if (!transition) {
+      return this.setState({regions: nextProps.regions});
+    }
+    this.handleTransition(transition);
+  }
+
+  handleTransition(transition) {
+    const next = transition.getNext();
+    if (!next) {
+      return;
+    }
+    next.then((state) => {
+      log(`Got state ${JSON.stringify(state)}`);
+      this.setState({regions: state});
+      this.handleTransition(transition);
+    })
+    .catch(console.error.bind(console));
   }
 
   removeRegion(id) {
@@ -117,11 +136,10 @@ class Region extends React.Component {
     const style = wicked.getStateCss(this.props.position);
     const backgroundColor = this.props.region.backgroundColor;
     const transitionDelay = "0s";
-    const transitionDuration = `${TRANSITION_SPEED}ms`;
     const transitionProperty = "all";
     const transitionTimingFunction = "ease";
 
-    return {...style, backgroundColor, transitionDelay, transitionDuration, transitionProperty, transitionTimingFunction};
+    return {...style, backgroundColor, transitionDelay, transitionProperty, transitionTimingFunction};
   }
 
   render() {

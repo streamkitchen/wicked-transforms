@@ -1,9 +1,52 @@
 /**
- * Wicked transitions are a way of defining transitions given various rectangular regions on a 
+ * Wicked transitions are a way of defining transitions given various rectangular regions on a
  * canvas. Like, you know, what streamplace is.
  */
 
 import defaultTransitions from "./default-transitions";
+import debug from "debug";
+
+const log = debug("sk:wicked-transitions");
+
+const TRANSITION_DURATION = 300;
+
+export class StateQueue {
+  constructor({from, to, transitions, delay}) {
+    this.regionsById = {};
+    from.concat(to).forEach((region) => {
+      this.regionsById[region.id] = region;
+    });
+    const [transition] = transitions;
+    this.states = [
+      transition.start,
+      transition.startAnim,
+      delay,
+      transition.endAnim,
+      transition.end,
+    ];
+  }
+
+  getNext() {
+    if (this.states.length === 0) {
+      log("No more states, returning null.");
+      return null;
+    }
+    return new Promise((resolve, reject) => {
+      let state = this.states.shift();
+      if (typeof state === "number") {
+        setTimeout(() => {
+          this.getNext().then(resolve).catch(reject);
+        }, state);
+      }
+      else {
+        state = state.map((region) => {
+          return {...this.regionsById[region.id], ...region};
+        });
+        resolve(state);
+      }
+    });
+  }
+}
 
 export class WickedTransitions {
   constructor() {
@@ -38,19 +81,20 @@ export class WickedTransitions {
   }
 
   regionMatches(r1, r2) {
-    console.log(r1, r2);
-    ["x", "y", "width", "height"].every((field) => {
-      if (r1[field] !== r2[field]) {
-        return false;
+    return ["x", "y", "width", "height"].every((field) => {
+      if (r1[field] === r2[field]) {
+        return true;
       }
       // Only other case: they're fraction tuples
       if (!(typeof r1[field].length === "number" && typeof r2[field].length === "number")) {
+        log(`typeof ${field}.length: ${typeof r1[field].length} !== ${typeof r2[field].length}`);
         return false;
       }
       // Okay, check that then
       const [r1Num, r1Dom] = r1[field];
       const [r2Num, r2Dom] = r2[field];
       if (r1Num !== r2Num || r2Num !== r2Dom) {
+        log(`fraction: ${r1Num}/${r2Dom} !== ${r2Num}/${r2Dom}`);
         return false;
       }
       return true;
@@ -59,6 +103,7 @@ export class WickedTransitions {
 
   regionsMatch(regions1, regions2) {
     if (regions1.length !== regions2.length) {
+      log(`Length mismatch: ${regions1.length} !== ${regions2.length}`);
       return false;
     }
     return regions1.every((r1, i) => {
@@ -66,11 +111,27 @@ export class WickedTransitions {
     });
   }
 
-  transition(from, to) {
-    const transition = this.transitions.find(({start, end}) => {
-      return this.regionsMatch(from, start) && this.regionsMatch(to, end);
+  transitionMatches(transition, from, to) {
+    const {start, end} = transition;
+    if (!this.regionsMatch(start, from) || !this.regionsMatch(to, end)) {
+      return false;
+    }
+    const logger = [];
+    from.forEach((region, i) => {
+      lo
     });
-    console.log(transition ? transition.name : "No transition found");
+    log(keyToId);
+    return true;
+  }
+
+  transition(from, to) {
+    const transition = this.transitions.find((transition) => {
+      log(`Checking ${transition.name}`);
+      return this.transitionMatches(transition, from, to);
+    });
+    const allRegions = {};
+    log(transition ? transition.name : "No transition found");
+    return new StateQueue({from, to, transitions: [transition], duration: TRANSITION_DURATION});
   }
 
   /**
@@ -104,6 +165,7 @@ export class WickedTransitions {
       top: `${state.y}%`,
       width: `${state.width}%`,
       height: `${state.height}%`,
+      transitionDuration: `${TRANSITION_DURATION}ms`,
     };
   }
 }
