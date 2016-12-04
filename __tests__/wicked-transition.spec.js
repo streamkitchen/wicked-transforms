@@ -1,6 +1,6 @@
 
 import WickedTransition from "../src/wicked-transition";
-import {state1x1, state1x2, state2x1} from "../src/default-states";
+import {state1x1, state1x2, state2x1} from "../src/default-scenes";
 
 describe("WickedTransition", () => {
 
