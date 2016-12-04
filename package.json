@@ -4,8 +4,12 @@
   "description": "Cool Splitscreen Transforms, yo!",
   "main": "wicked-transforms.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest --colors",
     "dev": "webpack-dev-server --history-api-fallback --progress --colors --inline --host 0.0.0.0 --port 9876"
+  },
+  "jest": {
+    "verbose": true,
+    "testPathIgnorePatterns": ["/helper/"]
   },
   "author": "Eli Mallon",
   "license": "Apache-2.0",
@@ -17,6 +21,7 @@
     "copy-webpack-plugin": "^4.0.1",
     "css-loader": "^0.26.0",
     "file-loader": "^0.9.0",
+    "jest": "^17.0.3",
     "node-sass": "^3.13.0",
     "normalize.css": "^5.0.0",
     "react": "^15.4.1",

@@ -88,11 +88,7 @@ class TVScreen extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    const transition = wicked.transition(this.state.regions, nextProps.regions);
-    if (!transition) {
-      return this.setState({regions: nextProps.regions});
-    }
-    this.handleTransition(transition);
+    return this.setState({regions: nextProps.regions});
   }
 
   handleTransition(transition) {
