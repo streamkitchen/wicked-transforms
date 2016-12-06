@@ -6,7 +6,7 @@ import debug from "debug";
 
 const log = debug("sk:scene-queue");
 
-export const ANIM_DURATION = 250;
+export const ANIM_DURATION = 300;
 
 // On node, just do nextFrame stuff async. On browser, do requestAnimationFrame.
 let nextFrame = function(cb) {
