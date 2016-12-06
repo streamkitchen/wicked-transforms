@@ -1,6 +1,6 @@
 
 import WickedScene from "./wicked-scene";
-import {scene1x1, scene1x2, scene2x1} from "./default-scenes";
+import {scene1x1, scene1x2, scene1x3, scene2x1} from "./default-scenes";
 
 const transitions = {};
 
@@ -11,6 +11,13 @@ export default class WickedTransition {
     this.after = new WickedScene(after);
     this.startAnim = startAnim;
     this.endAnim = endAnim;
+  }
+
+  /**
+   * To be honest, I don't really know what a scalar is. But this normalizes them anyway.
+   */
+  _normalizeScalar(scalar, from, to) {
+    return (scalar / from) * to;
   }
 
   go(fromScene, toScene) {
@@ -56,6 +63,13 @@ export default class WickedTransition {
               if (idx === fromKeys.length - 1) {
                 return {...r, x: toScene.width}
               }
+              // Otherwise we're in the middle, just let others cover us
+              return {
+                ...r,
+                width: this._normalizeScalar(r.width, fromScene.width, toScene.width),
+                x: this._normalizeScalar(r.x, fromScene.width, toScene.width),
+                zIndex: 1,
+              };
             }),
           ]
         }
@@ -76,8 +90,6 @@ WickedTransition.addTransition = function(transition) {
     name: `${transition.name} (reversed)`,
     before: transition.after,
     after: transition.before,
-    startAnim: transition.endAnim,
-    endAnim: transition.startAnim,
   }));
 };
 
@@ -85,24 +97,13 @@ WickedTransition.addTransition({
   name: "1x1 --> 1x2",
   before: scene1x1,
   after: scene1x2,
-  startAnim: function({toScene, fromKeys, toKeys}) {
-    return {
-      ...this.before,
-      regions: [
-        ...this.before.regions
-      ]
-    }
-  },
-  endAnim: function({toKeys}) {
-    return {
-      ...this.after,
-      regions: this.after.regions.map((r, i) => {
-        return {...r, key: toKeys[i]};
-      }),
-    };
-  }
 });
 
+WickedTransition.addTransition({
+  name: "1x2 --> 1x3",
+  before: scene1x2,
+  after: scene1x3,
+});
 
 WickedTransition.findPath = function(start, end) {
   start = new WickedScene(start);

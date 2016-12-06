@@ -11,7 +11,7 @@ import debug from "debug";
 
 const log = debug("sk:wicked-transitions-demo");
 
-const MAX_REGIONS = 2;
+const MAX_REGIONS = 3;
 
 let _id = 0;
 const uid = function() {
@@ -57,29 +57,20 @@ class WickedTransforms extends React.Component {
   }
 
   resetRegions(newRegions) {
-    let positions;
-    if (newRegions.length === 0) {
-      positions = {
-        width: 1,
-        height: 1,
-        regions: []
-      };
-    }
-    else if (newRegions.length === 1) {
-      positions = defaultScenes.scene1x1;
-    }
-    else if (newRegions.length === 2) {
-      positions = defaultScenes.scene1x2;
-    }
-    else {
+    const sceneKey = Object.keys(defaultScenes).find((key) => {
+      return defaultScenes[key].regions.length === newRegions.length;
+    });
+    if (!sceneKey) {
       return;
     }
+    log(`Selecting scene ${sceneKey}`);
+    const scene = defaultScenes[sceneKey];
     const regions = newRegions.map((r, i) => {
-      return {...r, ...positions.regions[i]};
+      return {...r, ...scene.regions[i]};
     });
     this.setState({scene: {
-      width: positions.width,
-      height: positions.height,
+      width: scene.width,
+      height: scene.height,
       regions: regions
     }});
   }
@@ -156,6 +147,7 @@ class Region extends React.Component {
       top: `${region.y / scene.height * 100}%`,
       width: `${region.width / scene.width * 100}%`,
       height: `${region.height / scene.height * 100}%`,
+      zIndex: region.zIndex || 5,
       backgroundColor: this.props.region.backgroundColor,
       transitionDelay: "0s",
       transitionProperty: "all",
