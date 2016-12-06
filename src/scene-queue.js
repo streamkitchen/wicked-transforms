@@ -32,22 +32,16 @@ export default class SceneQueue extends EE {
     if (!this.scene) {
       log("First scene, no queue necessary");
       this.scene = newScene;
-      this.emit("scene", newScene);
       return;
     }
-    const transitions = WickedTransition.findPath(this.scene, newScene);
+    let transitions = WickedTransition.findPath(this.scene, newScene);
     if (!transitions) {
-      log("No path found, applying new scene instantly");
-      // Couldn't find transitions to get us there, sad. Just go for it...
-      this.scene = newScene;
-      this.emit("scene", newScene);
-      return;
+      log(`No path found, applying instantly.`);
+      transitions = [];
     }
-    log("Found path!", transitions);
     transitions.forEach((transition) => {
       log(`Applying ${transition.name}`);
       const {start, end} = transition.go(this.scene, newScene);
-      console.log({start, end});
       this.queue.push(start, end, ANIM_DURATION);
     });
     this.queue.push(newScene);

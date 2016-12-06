@@ -127,11 +127,9 @@ class TVScreen extends React.Component {
     if (!this.state.regions) {
       return [];
     }
-    console.log(`Rendering ${this.state.regions.length} regions`);
     return this.state.regions.sort((r1, r2) => {
       return r1.key > r2.key ? 1 : -1;
     }).map((region) => {
-      console.log(region.key);
       return <Region onClick={this.removeRegion.bind(this, region.key)} id={region.key} key={region.key} region={region} scene={this.state} />;
     });
   }
@@ -168,7 +166,6 @@ class Region extends React.Component {
 
   render() {
     const myStyle = this.getStyle();
-    console.log(myStyle);
     return (
       <div onClick={this.props.onClick} style={myStyle} className={style.Region}></div>
     );
