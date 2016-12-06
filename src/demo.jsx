@@ -5,12 +5,13 @@ import React from "react";
 import {} from "normalize.css/normalize.css";
 import style from "./demo.scss";
 import wicked from "./wicked-transitions.js";
-import getPositions from "./get-positions";
+import SceneQueue, {ANIM_DURATION} from "./scene-queue"
+import * as defaultScenes from "./default-scenes";
 import debug from "debug";
 
 const log = debug("sk:wicked-transitions-demo");
 
-const MAX_REGIONS = 4;
+const MAX_REGIONS = 2;
 
 let _id = 0;
 const uid = function() {
@@ -23,11 +24,11 @@ class WickedTransforms extends React.Component {
   constructor() {
     super();
     this.state = {
-      regions: [],
       scene: {
-        width: 1920,
-        height: 1080,
-      },
+        regions: [],
+        width: 16,
+        height: 9,
+      }
     };
   }
 
@@ -40,33 +41,53 @@ class WickedTransforms extends React.Component {
   }
 
   addRegion() {
-    if (this.state.regions.length >= MAX_REGIONS) {
+    if (this.state.scene.regions.length >= MAX_REGIONS) {
       return;
     }
-    let regions = this.state.regions.concat([{
-      id: uid(),
+    let regions = this.state.scene.regions.concat([{
+      key: uid(),
       backgroundColor: this.randomColor(),
     }]);
     this.resetRegions(regions);
   }
 
-  removeRegion(id) {
-    const regions = this.state.regions.filter(r => r.id !== id);
+  removeRegion(key) {
+    const regions = this.state.scene.regions.filter(r => r.key !== key);
     this.resetRegions(regions);
   }
 
   resetRegions(newRegions) {
-    const positions = getPositions({count: newRegions.length});
+    let positions;
+    if (newRegions.length === 0) {
+      positions = {
+        width: 1,
+        height: 1,
+        regions: []
+      };
+    }
+    else if (newRegions.length === 1) {
+      positions = defaultScenes.scene1x1;
+    }
+    else if (newRegions.length === 2) {
+      positions = defaultScenes.scene1x2;
+    }
+    else {
+      return;
+    }
     const regions = newRegions.map((r, i) => {
-      return {...r, ...positions[i]};
+      return {...r, ...positions.regions[i]};
     });
-    this.setState({regions});
+    this.setState({scene: {
+      width: positions.width,
+      height: positions.height,
+      regions: regions
+    }});
   }
 
   render() {
     return (
       <div className={style.Container}>
-        <TVScreen onRemoveRegion={::this.removeRegion} regions={this.state.regions} scene={this.state.scene} />
+        <TVScreen onRemoveRegion={::this.removeRegion} scene={this.state.scene} />
         <div className={style.Buttons}>
           <button onClick={::this.addRegion} className={style.PlusButton}>+</button>
         </div>
@@ -78,46 +99,47 @@ class WickedTransforms extends React.Component {
 class TVScreen extends React.Component {
   constructor() {
     super();
-    this.state = {
-      regions: []
-    };
+    this.state = {};
+    this.sceneQueue = new SceneQueue();
+    this.sceneQueue.on("scene", (scene) => {
+      this.setState(scene);
+    });
   }
 
   componentWillMount() {
-    this.setState({regions: this.props.regions});
+    this.componentWillReceiveProps(this.props);
   }
 
   componentWillReceiveProps(nextProps) {
-    return this.setState({regions: nextProps.regions});
+    const {scene} = nextProps;
+    this.sceneQueue.pushScene(scene);
   }
 
   handleTransition(transition) {
-    const next = transition.getNext();
-    if (!next) {
-      return;
-    }
-    next.then((state) => {
-      log(`Got state ${JSON.stringify(state)}`);
-      this.setState({regions: state});
-      this.handleTransition(transition);
-    })
-    .catch(console.error.bind(console));
+
   }
 
   removeRegion(id) {
     this.props.onRemoveRegion(id);
   }
 
-  rengerRegions() {
-    return this.state.regions.map((region, i) => {
-      return <Region onClick={this.removeRegion.bind(this, region.id)} key={region.id} scene={this.props.scene} region={region} position={region} />;
+  renderRegions() {
+    if (!this.state.regions) {
+      return [];
+    }
+    console.log(`Rendering ${this.state.regions.length} regions`);
+    return this.state.regions.sort((r1, r2) => {
+      return r1.key > r2.key ? 1 : -1;
+    }).map((region) => {
+      console.log(region.key);
+      return <Region onClick={this.removeRegion.bind(this, region.key)} id={region.key} key={region.key} region={region} scene={this.state} />;
     });
   }
 
   render() {
     return (
       <div className={style.TVScreen}>
-        {this.rengerRegions()}
+        {this.renderRegions()}
       </div>
     );
   }
@@ -129,17 +151,24 @@ class Region extends React.Component {
   }
 
   getStyle() {
-    const style = wicked.getStateCss(this.props.position);
-    const backgroundColor = this.props.region.backgroundColor;
-    const transitionDelay = "0s";
-    const transitionProperty = "all";
-    const transitionTimingFunction = "ease";
-
-    return {...style, backgroundColor, transitionDelay, transitionProperty, transitionTimingFunction};
+    // This should be in the library obviously
+    const {scene, region} = this.props;
+    return {
+      left: `${region.x / scene.width * 100}%`,
+      top: `${region.y / scene.height * 100}%`,
+      width: `${region.width / scene.width * 100}%`,
+      height: `${region.height / scene.height * 100}%`,
+      backgroundColor: this.props.region.backgroundColor,
+      transitionDelay: "0s",
+      transitionProperty: "all",
+      transitionTimingFunction: "ease",
+      transitionDuration: `${ANIM_DURATION}ms`,
+    }
   }
 
   render() {
     const myStyle = this.getStyle();
+    console.log(myStyle);
     return (
       <div onClick={this.props.onClick} style={myStyle} className={style.Region}></div>
     );

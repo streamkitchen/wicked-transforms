@@ -3,6 +3,36 @@ import SceneQueue from "../src/scene-queue";
 
 jest.useFakeTimers();
 
+const scene1x1 = {
+  width: 100,
+  height: 100,
+  regions: [{
+    key: "a",
+    x: 0,
+    y: 0,
+    width: 100,
+    height: 100,
+  }]
+};
+
+const scene1x2 = {
+  width: 100,
+  height: 100,
+  regions: [{
+    key: "a",
+    x: 0,
+    y: 0,
+    width: 50,
+    height: 100,
+  }, {
+    key: "b",
+    x: 50,
+    y: 0,
+    width: 50,
+    height: 100,
+  }]
+};
+
 describe("SceneQueue", () => {
 
   let queue;
@@ -11,61 +41,62 @@ describe("SceneQueue", () => {
   });
 
   it("should emit the first scene", function(done) {
-    const myScene = {
-      width: 100,
-      height: 100,
-      regions: [{
-        x: 0,
-        y: 0,
-        width: 100,
-        height: 100,
-        key: 0,
-      }]
-    };
     queue.on("scene", (scene) => {
-      expect(scene).toEqual(myScene);
+      expect(scene).toEqual(scene1x1);
       done();
     });
-    queue.pushScene(myScene);
+    queue.pushScene(scene1x1);
   });
 
   it("should transition gracefully", function(done) {
     let called = 0;
+    let expected = [
+      scene1x1,
+      {
+        width: 100,
+        height: 100,
+        regions: [{
+          key: "a",
+          x: 0,
+          y: 0,
+          width: 100,
+          height: 100
+        }, {
+          key: "b",
+          x: 100,
+          y: 0,
+          width: 0,
+          height: 100
+        }]
+      }, {
+        width: 100,
+        height: 100,
+        regions: [{
+          key: "a",
+          x: 0,
+          y: 0,
+          width: 50,
+          height: 100
+        }, {
+          key: "b",
+          x: 50,
+          y: 0,
+          width: 50,
+          height: 100
+        }]
+      },
+      scene1x2
+    ];
+    let actual = [];
     queue.on("scene", (scene) => {
-      called += 1;
-      if (called > 1 && queue.queue.length === 0) {
-        expect(called).toBe(4);
+      actual.push(scene);
+      if (actual.length === 4) {
+        expect(actual).toEqual(expected);
         done();
       }
     });
-    queue.pushScene({
-      width: 100,
-      height: 100,
-      regions: [{
-        x: 0,
-        y: 0,
-        width: 100,
-        height: 100,
-        key: 0,
-      }]
-    });
-    queue.pushScene({
-      width: 100,
-      height: 100,
-      regions: [{
-        key: 0,
-        x: 0,
-        y: 0,
-        width: 50,
-        height: 100,
-      }, {
-        key: 1,
-        x: 50,
-        y: 0,
-        width: 50,
-        height: 100,
-      }]
-    });
+    queue.pushScene(scene1x1);
+    queue.pushScene(scene1x2);
     jest.runAllTimers();
   });
 });

@@ -1,32 +1,32 @@
 
-export const state1x1 = {
-  width: 100,
-  height: 100,
+export const scene1x1 = {
+  width: 16,
+  height: 9,
   regions: [{
     x: 0,
     y: 0,
-    width: 100,
-    height: 100,
+    width: 16,
+    height: 9,
   }]
 };
 
-export const state1x2 = {
-  width: 100,
-  height: 100,
+export const scene1x2 = {
+  width: 16,
+  height: 9,
   regions: [{
     x: 0,
     y: 0,
-    width: 50,
-    height: 100,
+    width: 8,
+    height: 9,
   }, {
-    x: 50,
+    x: 8,
     y: 0,
-    width: 50,
-    height: 100,
+    width: 8,
+    height: 9,
   }]
 };
 
-export const state2x1 = {
+export const scene2x1 = {
   width: 100,
   height: 100,
   regions: [{

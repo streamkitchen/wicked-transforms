@@ -1,6 +1,6 @@
 
 import WickedScene from "./wicked-scene";
-import {state1x1, state1x2, state2x1} from "./default-scenes";
+import {scene1x1, scene1x2, scene2x1} from "./default-scenes";
 
 const transitions = {};
 
@@ -14,12 +14,57 @@ export default class WickedTransition {
   }
 
   go(fromScene, toScene) {
-    return [
-      fromScene,
-      300,
-      toScene,
-      toScene,
-    ];
+    const fromKeys = fromScene.regions.map(r => r.key);
+    const toKeys = toScene.regions.map(r => r.key);
+    const newRegions = toKeys
+      .filter(k => !fromKeys.includes(k))
+      .map(k => toScene.regions.find(r => r.key === k));
+    const removedRegions = fromKeys
+      .filter(k => !toKeys.includes(k))
+      .map(k => fromScene.regions.find(r => r.key === k));
+    if (toKeys.length > fromKeys.length) {
+      // New regions, cool. How is the transition happening?
+      return {
+        start: {
+          width: fromScene.width,
+          height: fromScene.height,
+          regions: [
+            ...fromScene.regions,
+            ...newRegions.map(r => {
+              return {...r, x: fromScene.width}
+            })
+          ]
+        },
+        end: toScene
+      }
+    }
+    else {
+      return {
+        start: fromScene,
+        end: {
+          width: toScene.width,
+          height: toScene.height,
+          regions: [
+            ...toScene.regions,
+            ...removedRegions.map(r => {
+              // If we were first, slide off to the left
+              const idx = fromKeys.indexOf(r.key);
+              if (idx === 0) {
+                return {...r, x: -r.width}
+              }
+              // If we were last, slide off to the right
+              if (idx === fromKeys.length - 1) {
+                return {...r, x: toScene.width}
+              }
+            }),
+          ]
+        }
+      }
+    }
+    return {
+      start: fromScene,
+      end: toScene,
+    }
   }
 }
 
@@ -38,17 +83,26 @@ WickedTransition.addTransition = function(transition) {
 
 WickedTransition.addTransition({
   name: "1x1 --> 1x2",
-  before: state1x1,
-  after: state1x2,
-  startAnim: function(scene) {
-
+  before: scene1x1,
+  after: scene1x2,
+  startAnim: function({toScene, fromKeys, toKeys}) {
+    return {
+      ...this.before,
+      regions: [
+        ...this.before.regions
+      ]
+    }
   },
+  endAnim: function({toKeys}) {
+    return {
+      ...this.after,
+      regions: this.after.regions.map((r, i) => {
+        return {...r, key: toKeys[i]};
+      }),
+    };
+  }
 });
-WickedTransition.addTransition({
-  name: "1x1 --> 2x1",
-  before: state1x1,
-  after: state2x1,
-});
+
 
 WickedTransition.findPath = function(start, end) {
   start = new WickedScene(start);

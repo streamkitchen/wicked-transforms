@@ -159,13 +159,12 @@ export class WickedTransitions {
    * Given a region, yield an object with {top, left, width, height} strings
    */
   getStateCss(state) {
-    state = this.normalizeRegion(state);
+    // state = this.normalizeRegion(state);
     return {
       left: `${state.x}%`,
       top: `${state.y}%`,
       width: `${state.width}%`,
       height: `${state.height}%`,
-      transitionDuration: `${TRANSITION_DURATION}ms`,
     };
   }
 }
