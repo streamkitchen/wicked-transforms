@@ -1,6 +1,14 @@
 
 import WickedScene from "./wicked-scene";
-import {scene1x1, scene1x2, scene1x3, scene2x2, scene1x2x2} from "./default-scenes";
+import {
+  scene1x1,
+  scene1x2,
+  scene1x3,
+  scene2x2,
+  scene1x2x2,
+  scene0x0,
+  scene2x2x2
+} from "./default-scenes";
 import {ANIM_DURATION} from "./constants";
 import debug from "debug";
 
@@ -108,6 +116,9 @@ export default class WickedTransition {
     if (!(onTop || onBottom || onLeft || onRight)) {
       throw new Error("can't transition, you're not on a side!");
     }
+    else if (onTop && onBottom && onLeft && onRight) {
+      comesFrom = "middle";
+    }
     else if (onTop && onBottom || (!onTop && !onBottom)) {
       if (onLeft) {
         comesFrom = "left";
@@ -200,9 +211,21 @@ WickedTransition.addTransition({
 });
 
 WickedTransition.addTransition({
+  name: "1x2x2 --> 2x2x2",
+  before: scene1x2x2,
+  after: scene2x2x2,
+});
+
+WickedTransition.addTransition({
   name: "1x2 --> 1x3",
   before: scene1x2,
   after: scene1x3,
+});
+
+WickedTransition.addTransition({
+  name: "0x0 --> 1x1",
+  before: scene0x0,
+  after: scene1x1,
 });
 
 WickedTransition.findPath = function(start, end) {

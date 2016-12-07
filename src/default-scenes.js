@@ -86,27 +86,27 @@ export const scene1x2x2 = {
     x: 0,
     y: 0,
     width: 16,
+    height: 9,
+  }, {
+    x: 16,
+    y: 0,
+    width: 16,
+    height: 9,
+  }, {
+    x: 0,
+    y: 9,
+    width: 16,
+    height: 9,
+  }, {
+    x: 16,
+    y: 9,
+    width: 16,
+    height: 9,
+  }, {
+    x: 16 * 2,
+    y: 0,
+    width: 16,
     height: 9 * 2,
-  }, {
-    x: 16,
-    y: 0,
-    width: 16,
-    height: 9,
-  }, {
-    x: 16,
-    y: 9,
-    width: 16,
-    height: 9,
-  }, {
-    x: 16 * 2,
-    y: 0,
-    width: 16,
-    height: 9,
-  }, {
-    x: 16 * 2,
-    y: 9,
-    width: 16,
-    height: 9,
   }]
 };
 
@@ -119,13 +119,13 @@ export const scene2x2x2 = {
     width: 16,
     height: 9,
   }, {
-    x: 0,
-    y: 9,
+    x: 16,
+    y: 0,
     width: 16,
     height: 9,
   }, {
-    x: 16,
-    y: 0,
+    x: 0,
+    y: 9,
     width: 16,
     height: 9,
   }, {

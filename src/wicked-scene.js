@@ -29,6 +29,21 @@ export default class WickedScene {
     sceneCache.push(this);
   }
 
+  _sortRegions(regions) {
+    return regions.sort((r1, r2) => {
+      if (r1.x !== r2.x) {
+        return r1.x - r2.x;
+      }
+      if (r1.y !== r2.y) {
+        return r1.y - r2.y;
+      }
+      if (r1.width !== r2.width) {
+        return r2.width - r2.width;
+      }
+      return r1.height - r1.height;
+    });
+  }
+
   /**
    * Is this scene exactly equal to another scene? If so, yay!
    *
