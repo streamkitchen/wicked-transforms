@@ -73,7 +73,19 @@
 }
 
 .Region {
+  box-sizing: border-box;
   position: absolute;
   cursor: pointer;
   composes: HoverLight;
+  display: flex;
+
+  span {
+    margin: auto;
+    font-size: 2em;
+    text-shadow:
+     -1px -1px 0 #000,
+      1px -1px 0 #000,
+      -1px 1px 0 #000,
+       1px 1px 0 #000;
+  }
 }

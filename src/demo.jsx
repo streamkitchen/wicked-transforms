@@ -9,6 +9,7 @@ import SceneQueue from "./scene-queue";
 import {ANIM_DURATION} from "./constants";
 import * as defaultScenes from "./default-scenes";
 import debug from "debug";
+import leftPad from "left-pad";
 
 const log = debug("sk:wicked-transitions-demo");
 
@@ -16,7 +17,7 @@ const MAX_REGIONS = 6;
 
 let _id = 0;
 const uid = function() {
-  const ret = `thingy-${_id}`;
+  const ret = `thingy-${leftPad(_id, 4, "0")}`;
   _id += 1;
   return ret;
 };
@@ -66,8 +67,8 @@ class WickedTransforms extends React.Component {
     }
     log(`Selecting scene ${sceneKey}`);
     const scene = defaultScenes[sceneKey];
-    const regions = newRegions.map((r, i) => {
-      return {...r, ...scene.regions[i]};
+    const regions = scene.regions.map((r, i) => {
+      return {...newRegions[i], ...scene.regions[i]};
     });
     this.setState({scene: {
       width: scene.width,
@@ -160,7 +161,9 @@ class Region extends React.Component {
   render() {
     const myStyle = this.getStyle();
     return (
-      <div onClick={this.props.onClick} style={myStyle} className={style.Region}></div>
+      <div onClick={this.props.onClick} style={myStyle} className={style.Region}>
+        <span>{this.props.id}</span>
+      </div>
     );
   }
 }
