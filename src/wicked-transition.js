@@ -245,13 +245,10 @@ WickedTransition.findPath = function(current, end, start = current, transitions 
 
   const wCurrent = new WickedScene(current);
   // omfg do i remember how to do a BFS search algorithm???
-  window.goTime = true;
   if (wCurrent.isEqual(end)) {
-    window.goTime = false;
     // err yeah base case okay, we're done
     return {transitions, scenePath};
   }
-  window.goTime = false;
   // umm... it works... but I think it's exhaustive or something...
   return WickedTransition._transitions
   .filter((transition) => {
