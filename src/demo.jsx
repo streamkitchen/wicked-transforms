@@ -5,13 +5,14 @@ import React from "react";
 import {} from "normalize.css/normalize.css";
 import style from "./demo.scss";
 import wicked from "./wicked-transitions.js";
-import SceneQueue, {ANIM_DURATION} from "./scene-queue"
+import SceneQueue from "./scene-queue";
+import {ANIM_DURATION} from "./constants";
 import * as defaultScenes from "./default-scenes";
 import debug from "debug";
 
 const log = debug("sk:wicked-transitions-demo");
 
-const MAX_REGIONS = 3;
+const MAX_REGIONS = 4;
 
 let _id = 0;
 const uid = function() {

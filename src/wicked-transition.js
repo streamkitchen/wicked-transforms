@@ -1,14 +1,19 @@
 
 import WickedScene from "./wicked-scene";
-import {scene1x1, scene1x2, scene1x3, scene2x1} from "./default-scenes";
+import {scene1x1, scene1x2, scene1x3, scene2x2} from "./default-scenes";
+import {ANIM_DURATION} from "./constants";
+import debug from "debug";
+
+const log = debug("sk:wicked-transition");
 
 const transitions = {};
 
 export default class WickedTransition {
-  constructor({name, before, after, startAnim, endAnim}) {
+  constructor({name, before, after, startAnim, endAnim, isReversed}) {
     this.name = name;
     this.before = new WickedScene(before);
     this.after = new WickedScene(after);
+    this.isReversed = isReversed;
     this.startAnim = startAnim;
     this.endAnim = endAnim;
   }
@@ -20,7 +25,57 @@ export default class WickedTransition {
     return (scalar / from) * to;
   }
 
+  _normalizeScene(scene) {
+    return {
+      ...scene,
+      width: 1,
+      height: 1,
+      regions: scene.regions.map((r) => {
+        return {
+          ...r,
+          width: r.width / scene.width,
+          height: r.height / scene.height,
+          x: r.x / scene.width,
+          y: r.y / scene.height,
+        };
+      })
+    };
+  }
+
+  getAfter(fromScene, toScene) {
+    const diff = this.after.regions.length - this.before.regions.length;
+    let newRegions;
+    if (diff === 0) {
+      throw new Error("wtf, this isn't a transition, it has the same number before and after");
+    }
+    else if (diff > 0) {
+      return toScene;
+    }
+    else if (diff < 0) {
+      const after = this._normalizeScene(this.after);
+      fromScene = this._normalizeScene(fromScene);
+      return {
+        ...fromScene,
+        regions: fromScene.regions.slice(0, this.after.regions.length).map((r, i) => {
+          return {
+            ...fromScene.regions[i],
+            ...after.regions[i],
+          }
+        }),
+      };
+    }
+  }
+
   go(fromScene, toScene) {
+    if (this.isReversed) {
+      const newFromScene = toScene;
+      const newToScene = fromScene;
+      fromScene = newFromScene;
+      toScene = newToScene;
+    }
+    fromScene = this._normalizeScene(fromScene);
+    toScene = this._normalizeScene(toScene);
+    const {width, height} = toScene;
     const fromKeys = fromScene.regions.map(r => r.key);
     const toKeys = toScene.regions.map(r => r.key);
     const newRegions = toKeys
@@ -29,55 +84,80 @@ export default class WickedTransition {
     const removedRegions = fromKeys
       .filter(k => !toKeys.includes(k))
       .map(k => fromScene.regions.find(r => r.key === k));
-    if (toKeys.length > fromKeys.length) {
-      // New regions, cool. How is the transition happening?
-      return {
-        start: {
-          width: fromScene.width,
-          height: fromScene.height,
-          regions: [
-            ...fromScene.regions,
-            ...newRegions.map(r => {
-              return {...r, x: fromScene.width}
-            })
-          ]
-        },
-        end: toScene
+    if (newRegions.length === 0) {
+      throw new Error("no new regions provided");
+    }
+    let onTop = true;
+    let onBottom = true;
+    let onLeft = true;
+    let onRight = true;
+    newRegions.forEach((r) => {
+      onTop = r.y === 0 ? onTop : false;
+      onLeft = r.x === 0 ? onLeft : false;
+      onBottom = r.height + r.y === height ? onBottom : false;
+      onRight = r.width + r.x === width ? onRight : false;
+    });
+    let comesFrom;
+    if (!(onTop || onBottom || onLeft || onRight)) {
+      throw new Error("can't transition, you're not on a side!");
+    }
+    else if (onTop && onBottom || (!onTop && !onBottom)) {
+      if (onLeft) {
+        comesFrom = "left";
+      }
+      else if (onRight) {
+        comesFrom = "right";
+      }
+      else {
+        comesFrom = "middle";
+      }
+    }
+    else if (onLeft && onRight || (!onLeft && !onRight)) {
+      if (onTop) {
+        comesFrom = "top";
+      }
+      else if (onRight) {
+        comesFrom = "right";
+      }
+      else {
+        comesFrom = "middle";
       }
     }
     else {
-      return {
-        start: fromScene,
-        end: {
-          width: toScene.width,
-          height: toScene.height,
-          regions: [
-            ...toScene.regions,
-            ...removedRegions.map(r => {
-              // If we were first, slide off to the left
-              const idx = fromKeys.indexOf(r.key);
-              if (idx === 0) {
-                return {...r, x: -r.width}
-              }
-              // If we were last, slide off to the right
-              if (idx === fromKeys.length - 1) {
-                return {...r, x: toScene.width}
-              }
-              // Otherwise we're in the middle, just let others cover us
-              return {
-                ...r,
-                width: this._normalizeScalar(r.width, fromScene.width, toScene.width),
-                x: this._normalizeScalar(r.x, fromScene.width, toScene.width),
-                zIndex: 1,
-              };
-            }),
-          ]
-        }
-      }
+      // Okay, comes from nowhere -- just be there already.
+      comesFrom = "middle";
     }
-    return {
-      start: fromScene,
-      end: toScene,
+    const newScenes = newRegions.map((r) => {
+      r = {...r};
+      if (comesFrom === "left") {
+        r.x = -r.width;
+      }
+      else if (comesFrom === "right") {
+        r.x = width;
+      }
+      else if (comesFrom === "top") {
+        r.y = -r.height;
+      }
+      else if (comesFrom === "bottom") {
+        r.y = height
+      }
+      else if (comesFrom === "middle") {
+        r.zIndex = 1;
+      }
+      return r;
+    });
+    const stubScene = {
+      ...fromScene,
+      regions: [
+        ...fromScene.regions,
+        ...newScenes
+      ]
+    };
+    if (!this.isReversed) {
+      return [stubScene, toScene, ANIM_DURATION];
+    }
+    else {
+      return [stubScene, ANIM_DURATION, toScene];
     }
   }
 }
@@ -90,6 +170,7 @@ WickedTransition.addTransition = function(transition) {
     name: `${transition.name} (reversed)`,
     before: transition.after,
     after: transition.before,
+    isReversed: true,
   }));
 };
 
@@ -97,6 +178,12 @@ WickedTransition.addTransition({
   name: "1x1 --> 1x2",
   before: scene1x1,
   after: scene1x2,
+});
+
+WickedTransition.addTransition({
+  name: "1x2 --> 2x2",
+  before: scene1x2,
+  after: scene2x2,
 });
 
 WickedTransition.addTransition({

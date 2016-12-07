@@ -3,10 +3,9 @@ import EE from "wolfy87-eventemitter";
 import WickedTransition from "./wicked-transition";
 import WickedScene from "./wicked-scene";
 import debug from "debug";
+import {ANIM_DURATION} from "./constants";
 
 const log = debug("sk:scene-queue");
-
-export const ANIM_DURATION = 300;
 
 // On node, just do nextFrame stuff async. On browser, do requestAnimationFrame.
 let nextFrame = function(cb) {
@@ -39,10 +38,15 @@ export default class SceneQueue extends EE {
       log(`No path found, applying instantly.`);
       transitions = [];
     }
+    let currentScene = this.scene;
     transitions.forEach((transition) => {
       log(`Applying ${transition.name}`);
-      const {start, end} = transition.go(this.scene, newScene);
-      this.queue.push(start, end, ANIM_DURATION);
+      const after = transition.getAfter(currentScene, newScene);
+      console.log(`After ${transition.name}, I have ${after.regions.length}`);
+      const stubScene = transition.go(currentScene, after);
+      currentScene = after;
+      this.queue.push(...stubScene);
+      this.queue.push(after);
     });
     this.queue.push(newScene);
     this.scene = newScene;
@@ -66,6 +70,7 @@ export default class SceneQueue extends EE {
       }, scene);
     }
     log(`Emitting scene, ${this.queue.length} items remain in queue`);
+    console.log(`Drawing ${scene.regions.length} things`);
     this.emit("scene", scene);
     this._active = false;
     nextFrame(::this.processQueue);
