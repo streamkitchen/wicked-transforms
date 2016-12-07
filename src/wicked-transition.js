@@ -33,47 +33,58 @@ export default class WickedTransition {
     return (scalar / from) * to;
   }
 
+  /**
+   * Return a normalized scene with all of its coordinates using the same system. We maintain them
+   * as integers so comparison should be fine.
+   */
   _normalizeScene(scene) {
-    return {
-      ...scene,
-      width: 1,
-      height: 1,
-      regions: scene.regions.map((r) => {
-        return {
-          ...r,
-          width: r.width / scene.width,
-          height: r.height / scene.height,
-          x: r.x / scene.width,
-          y: r.y / scene.height,
-        };
-      })
-    };
+    return WickedScene.prototype._normalizeScene(scene);
   }
 
-  getAfter(fromScene, toScene) {
+  getAfter(currentScene, endScene, startScene) {
     const diff = this.after.regions.length - this.before.regions.length;
-    let newRegions;
     if (diff === 0) {
       throw new Error("wtf, this isn't a transition, it has the same number before and after");
     }
-    else if (diff > 0) {
-      return toScene;
+    const after = this._normalizeScene(this.after);
+    const currentKeys = currentScene.regions.map(r => r.key);
+    const endKeys = endScene.regions.map(r => r.key);
+    currentScene = this._normalizeScene(currentScene);
+    let newRegions;
+    if (diff > 0) {
+      // Okay, we gots to add some. Who should we add?
+      // Are there any regions at the end state that aren't currently here? Try them!
+      let additions = this._normalizeScene(endScene).regions.filter((r) => {
+        return !currentKeys.includes(r.key);
+      });
+      if (additions.length === 0) {
+        // alas, i cannot aid ye
+        return null;
+        // throw new Error("okay now we need to figure out this other case");
+      }
+      additions = additions.slice(0, diff);
+      return {
+        ...currentScene,
+        regions: currentScene.regions.concat(additions).map((r, i) => {
+          return {
+            ...r,
+            ...after.regions[i]
+          };
+        }),
+      };
     }
     else if (diff < 0) {
-      const after = this._normalizeScene(this.after);
-      fromScene = this._normalizeScene(fromScene);
-      const sortedFromScene = {...fromScene};
-      const toKeys = toScene.regions.map(r => r.key);
-      sortedFromScene.regions = fromScene.regions.sort((r1, r2) => {
-        const score1 = toKeys.includes(r1.key) ? 0 : 1;
-        const score2 = toKeys.includes(r2.key) ? 0 : 1;
+      const sortedCurrentScene = {...currentScene};
+      sortedCurrentScene.regions = currentScene.regions.sort((r1, r2) => {
+        const score1 = endKeys.includes(r1.key) ? 0 : 1;
+        const score2 = endKeys.includes(r2.key) ? 0 : 1;
         return score1 - score2;
       });
       return {
-        ...fromScene,
-        regions: fromScene.regions.slice(0, this.after.regions.length).map((r, i) => {
+        ...currentScene,
+        regions: currentScene.regions.slice(0, this.after.regions.length).map((r, i) => {
           return {
-            ...fromScene.regions[i],
+            ...currentScene.regions[i],
             ...after.regions[i],
           }
         }),
@@ -114,7 +125,7 @@ export default class WickedTransition {
     });
     let comesFrom;
     if (!(onTop || onBottom || onLeft || onRight)) {
-      throw new Error("can't transition, you're not on a side!");
+      comesFrom = "middle";
     }
     else if (onTop && onBottom && onLeft && onRight) {
       comesFrom = "middle";
@@ -228,36 +239,44 @@ WickedTransition.addTransition({
   after: scene1x1,
 });
 
-WickedTransition.findPath = function(start, end) {
-  start = new WickedScene(start);
-  end = new WickedScene(end);
-  return WickedTransition._findPath(start, end, []);
-};
-
-WickedTransition._findPath = function(start, end, path) {
-  // omfg do i remember how to do a BFS search algorithm???
-  if (start === end) {
-    // err yeah base case okay, we're done
-    return path;
+WickedTransition.findPath = function(current, end, start = current, transitions = [], scenePath = []) {
+  if (transitions.length === 0) {
   }
+
+  const wCurrent = new WickedScene(current);
+  // omfg do i remember how to do a BFS search algorithm???
+  window.goTime = true;
+  if (wCurrent.isEqual(end)) {
+    window.goTime = false;
+    // err yeah base case okay, we're done
+    return {transitions, scenePath};
+  }
+  window.goTime = false;
   // umm... it works... but I think it's exhaustive or something...
   return WickedTransition._transitions
   .filter((transition) => {
-    if (transition.before !== start) {
+    if (new WickedScene(transition.before) !== new WickedScene(current)) {
       return false;
     }
-    if (path.includes(transition)) {
+    if (transitions.includes(transition)) {
       return false;
     }
     return true;
   })
   .map((transition) => {
-    return this._findPath(transition.after, end, [...path, transition]);
+    const afterScene = transition.getAfter(current, end, start);
+    if (!afterScene) {
+      return null;
+    }
+    return this.findPath(afterScene, end, start, [...transitions, transition], [...scenePath, afterScene]);
   })
   .reduce((a, b) => {
-    if (a && b) {
-      return a.length < b.length ? a : b;
+    if (a && a.transitions) {
+      if (b && b.transitions) {
+        return a.transitions.length < b.transitions.length ? a : b;
+      }
+      return a;
     }
-    return a || b;
-  }, null);
+    return b;
+  }, {});
 };

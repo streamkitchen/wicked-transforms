@@ -19,12 +19,16 @@ export default class WickedScene {
       }
     }
 
+    const normalized = this._normalizeScene(newScene);
     // We don't? Okay. Copy everything into ourself and freeze.
-    this.regions = Object.freeze(newScene.regions.map(({x, y, width, height}) => {
+    this.regions = Object.freeze(normalized.regions.map(({x, y, width, height}) => {
+      if (width === 16) {
+        debugger;
+      }
       return Object.freeze({x, y, width, height});
     }));
-    this.width = newScene.width;
-    this.height = newScene.height;
+    this.width = normalized.width;
+    this.height = normalized.height;
     Object.freeze(this);
     sceneCache.push(this);
   }
@@ -44,6 +48,24 @@ export default class WickedScene {
     });
   }
 
+  _normalizeScene(scene) {
+    const scale = 10000000;
+    return {
+      ...scene,
+      width: scale,
+      height: scale,
+      regions: scene.regions.map((r) => {
+        return {
+          ...r,
+          width: Math.round(r.width / scene.width * scale),
+          height: Math.round(r.height / scene.height * scale),
+          x: Math.round(r.x / scene.width * scale),
+          y: Math.round(r.y / scene.height * scale),
+        };
+      })
+    };
+  }
+
   /**
    * Is this scene exactly equal to another scene? If so, yay!
    *
@@ -51,6 +73,7 @@ export default class WickedScene {
    * reduce the same way and all that.
    */
   isEqual(other) {
+    other = this._normalizeScene(other);
     // Maybe they're literally us?
     if (this === other) {
       return true;
