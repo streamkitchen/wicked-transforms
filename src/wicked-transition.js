@@ -1,6 +1,6 @@
 
 import WickedScene from "./wicked-scene";
-import {scene1x1, scene1x2, scene1x3, scene2x2} from "./default-scenes";
+import {scene1x1, scene1x2, scene1x3, scene2x2, scene1x2x2} from "./default-scenes";
 import {ANIM_DURATION} from "./constants";
 import debug from "debug";
 
@@ -191,6 +191,12 @@ WickedTransition.addTransition({
   name: "1x2 --> 2x2",
   before: scene1x2,
   after: scene2x2,
+});
+
+WickedTransition.addTransition({
+  name: "2x2 --> 1x2x2",
+  before: scene2x2,
+  after: scene1x2x2,
 });
 
 WickedTransition.addTransition({

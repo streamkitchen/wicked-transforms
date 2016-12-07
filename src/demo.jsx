@@ -12,7 +12,7 @@ import debug from "debug";
 
 const log = debug("sk:wicked-transitions-demo");
 
-const MAX_REGIONS = 4;
+const MAX_REGIONS = 6;
 
 let _id = 0;
 const uid = function() {
