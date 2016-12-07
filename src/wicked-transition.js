@@ -54,6 +54,13 @@ export default class WickedTransition {
     else if (diff < 0) {
       const after = this._normalizeScene(this.after);
       fromScene = this._normalizeScene(fromScene);
+      const sortedFromScene = {...fromScene};
+      const toKeys = toScene.regions.map(r => r.key);
+      sortedFromScene.regions = fromScene.regions.sort((r1, r2) => {
+        const score1 = toKeys.includes(r1.key) ? 0 : 1;
+        const score2 = toKeys.includes(r2.key) ? 0 : 1;
+        return score1 - score2;
+      });
       return {
         ...fromScene,
         regions: fromScene.regions.slice(0, this.after.regions.length).map((r, i) => {
