@@ -277,22 +277,28 @@ WickedTransition.addTransition({
   after: scene1x1,
 });
 
-WickedTransition.findPath = function(current, end, start = current, transitions = [], scenePath = []) {
+// Return true (we're done!) false (rejected!) or null (keep going!)
+const _evaluate = function(current, end) {
   // log(transitions.map(t => t.name).join(" | "));
   const wCurrent = new WickedScene(current);
   // omfg do i remember how to do a BFS search algorithm???
   if (wCurrent.isEqual(end)) {
     // err yeah base case okay, check to see if it's the right keys
-    const same = current.regions.every((r, i) => {
+    return current.regions.every((r, i) => {
       return r.key === end.regions[i].key;
     });
-    if (same) {
-      return {transitions, scenePath};
-    }
-    // console.info("Rejected for reasons of key mismatch");
+  }
+  return null;
+}
+
+WickedTransition.findPath = function(current, end, start = current, transitions = [], scenePath = []) {
+  const done = _evaluate(current, end);
+  if (done === true) {
+    return {transitions, scenePath};
+  }
+  if (done === false) {
     return null;
   }
-  // umm... it works... but I think it's exhaustive or something...
   let found = false;
   return WickedTransition._transitions
   .filter((transition) => {
