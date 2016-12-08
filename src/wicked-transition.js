@@ -50,7 +50,7 @@ export default class WickedTransition {
     const currentKeys = currentScene.regions.map(r => r.key);
     const endKeys = endScene.regions.map(r => r.key);
     currentScene = this._normalizeScene(currentScene);
-    let newRegions;
+    let candidateScenes = [];
     if (diff > 0) {
       // Okay, we gots to add some. Who should we add?
       // Are there any regions at the end state that aren't currently here? Try them!
@@ -59,11 +59,11 @@ export default class WickedTransition {
       });
       if (additions.length === 0) {
         // alas, i cannot aid ye
-        return null;
+        return [];
         // throw new Error("okay now we need to figure out this other case");
       }
       additions = additions.slice(0, diff);
-      return {
+      candidateScenes.push({
         ...currentScene,
         regions: currentScene.regions.concat(additions).map((r, i) => {
           return {
@@ -71,7 +71,7 @@ export default class WickedTransition {
             ...after.regions[i]
           };
         }),
-      };
+      });
     }
     else if (diff < 0) {
       const sortedCurrentScene = {...currentScene};
@@ -80,7 +80,7 @@ export default class WickedTransition {
         const score2 = endKeys.includes(r2.key) ? 0 : 1;
         return score1 - score2;
       });
-      return {
+      candidateScenes.push({
         ...currentScene,
         regions: currentScene.regions.slice(0, this.after.regions.length).map((r, i) => {
           return {
@@ -88,8 +88,9 @@ export default class WickedTransition {
             ...after.regions[i],
           }
         }),
-      };
+      });
     }
+    return candidateScenes;
   }
 
   go(fromScene, toScene) {
@@ -240,14 +241,18 @@ WickedTransition.addTransition({
 });
 
 WickedTransition.findPath = function(current, end, start = current, transitions = [], scenePath = []) {
-  if (transitions.length === 0) {
-  }
-
+  log(transitions.map(t => t.name).join(" | "));
   const wCurrent = new WickedScene(current);
   // omfg do i remember how to do a BFS search algorithm???
   if (wCurrent.isEqual(end)) {
-    // err yeah base case okay, we're done
-    return {transitions, scenePath};
+    // err yeah base case okay, check to see if it's the right keys
+    const same = current.regions.every((r, i) => {
+      return r.key === end.regions[i].key;
+    });
+    if (same) {
+      return {transitions, scenePath};
+    }
+    console.info("Rejected for reasons of key mismatch");
   }
   // umm... it works... but I think it's exhaustive or something...
   return WickedTransition._transitions
@@ -261,10 +266,14 @@ WickedTransition.findPath = function(current, end, start = current, transitions 
     return true;
   })
   .map((transition) => {
-    const afterScene = transition.getAfter(current, end, start);
-    if (!afterScene) {
-      return null;
-    }
+    const candidateScenes = transition.getAfter(current, end, start);
+    return [transition, candidateScenes];
+  })
+  .reduce((arr, [transition, candidateScenes]) => {
+    return arr.concat(candidateScenes.map(s => [transition, s]))
+  }, [])
+  // That thing returns arrays, flatten them
+  .map(([transition, afterScene]) => {
     return this.findPath(afterScene, end, start, [...transitions, transition], [...scenePath, afterScene]);
   })
   .reduce((a, b) => {
