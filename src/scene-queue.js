@@ -62,13 +62,13 @@ export default class SceneQueue extends EE {
     this._active = true;
     const scene = this.queue.shift();
     if (typeof scene === "number") {
-      log(`Delaying ${scene}ms, ${this.queue.length} items remain in queue`);
+      // log(`Delaying ${scene}ms, ${this.queue.length} items remain in queue`);
       return setTimeout(() => {
         this._active = false;
         this.processQueue();
       }, scene);
     }
-    log(`Emitting scene, ${this.queue.length} items remain in queue`);
+    // log(`Emitting scene, ${this.queue.length} items remain in queue`);
     this.emit("scene", scene);
     this._active = false;
     nextFrame(::this.processQueue);
