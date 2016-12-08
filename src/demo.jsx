@@ -22,7 +22,7 @@ const uid = function() {
   return ret;
 };
 
-class WickedTransforms extends React.Component {
+class WickedTransitions extends React.Component {
   constructor() {
     super();
     this.state = {
@@ -168,4 +168,4 @@ class Region extends React.Component {
   }
 }
 
-ReactDOM.render(<WickedTransforms />, document.querySelector("main"));
+ReactDOM.render(<WickedTransitions />, document.querySelector("main"));

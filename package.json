@@ -1,8 +1,8 @@
 {
-  "name": "wicked-transforms",
+  "name": "wicked-transitions",
   "version": "1.0.0",
-  "description": "Cool Splitscreen Transforms, yo!",
-  "main": "wicked-transforms.js",
+  "description": "Interesting transitions between things",
+  "main": "wicked-transitions.js",
   "scripts": {
     "test": "jest --colors",
     "dev": "webpack-dev-server --history-api-fallback --progress --colors --inline --host 0.0.0.0 --port 9876"
