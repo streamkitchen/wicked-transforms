@@ -63,16 +63,24 @@ export default class WickedTransition {
         return [];
         // throw new Error("okay now we need to figure out this other case");
       }
-      additions = additions.slice(0, diff);
-      candidateScenes.push({
-        ...currentScene,
-        regions: currentScene.regions.concat(additions).map((r, i) => {
-          return {
-            ...r,
-            ...after.regions[i]
-          };
-        }),
-      });
+      let combinations;
+      if (additions.length > diff) {
+        combinations = combination(additions, diff);
+      }
+      else {
+        combinations = [additions];
+      }
+      combinations.forEach((comb) => {
+        candidateScenes.push({
+          ...currentScene,
+          regions: currentScene.regions.concat(comb).map((r, i) => {
+            return {
+              ...r,
+              ...after.regions[i]
+            };
+          }),
+        });
+      })
     }
     else if (diff < 0) {
       const combinations = combination(currentScene.regions, this.after.regions.length);
@@ -127,6 +135,8 @@ export default class WickedTransition {
       .filter(k => !toKeys.includes(k))
       .map(k => fromScene.regions.find(r => r.key === k));
     if (newRegions.length === 0) {
+      console.log(this.name);
+      console.log(fromScene, toScene);
       throw new Error("no new regions provided");
     }
     let onTop = true;
@@ -240,6 +250,18 @@ WickedTransition.addTransition({
 WickedTransition.addTransition({
   name: "1x2x2 --> 2x2x2",
   before: scene1x2x2,
+  after: scene2x2x2,
+});
+
+WickedTransition.addTransition({
+  name: "1x3 --> 1x2x2",
+  before: scene1x3,
+  after: scene1x2x2,
+});
+
+WickedTransition.addTransition({
+  name: "1x3 --> 2x2x2",
+  before: scene1x3,
   after: scene2x2x2,
 });
 
