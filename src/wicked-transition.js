@@ -291,7 +291,38 @@ const _evaluate = function(current, end) {
   return null;
 }
 
-WickedTransition.findPath = function(current, end, start = current, transitions = [], scenePath = []) {
+WickedTransition.findPath = function(start, end) {
+  const queue = [];
+  queue.push([start, end, start, [], []]);
+  while (queue.length > 0) {
+    const [start, end, current, transitions, scenePath] = queue.shift();
+    const result = _evaluate(current, end);
+    if (result === true) {
+      return {transitions, scenePath};
+    }
+    if (result === false) {
+      continue;
+    }
+    WickedTransition._transitions
+    .filter((transition) => {
+      if (transitions.includes(transition)) {
+        return false;
+      }
+      if (new WickedScene(transition.before) !== new WickedScene(current)) {
+        return false;
+      }
+      return true;
+    })
+    .forEach((transition) => {
+      transition.getAfter(current, end, start).forEach((newScene) => {
+        queue.push([start, end, newScene, [...transitions, transition], [...scenePath, newScene]]);
+      });
+    });
+  }
+};
+
+// This version is hilarious but you do you I guess
+WickedTransition.findPathDFS = function(current, end, start = current, transitions = [], scenePath = []) {
   const done = _evaluate(current, end);
   if (done === true) {
     return {transitions, scenePath};
