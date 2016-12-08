@@ -290,8 +290,10 @@ WickedTransition.findPath = function(current, end, start = current, transitions 
       return {transitions, scenePath};
     }
     // console.info("Rejected for reasons of key mismatch");
+    return null;
   }
   // umm... it works... but I think it's exhaustive or something...
+  let found = false;
   return WickedTransition._transitions
   .filter((transition) => {
     if (new WickedScene(transition.before) !== new WickedScene(current)) {
@@ -311,7 +313,14 @@ WickedTransition.findPath = function(current, end, start = current, transitions 
   }, [])
   // That thing returns arrays, flatten them
   .map(([transition, afterScene]) => {
-    return this.findPath(afterScene, end, start, [...transitions, transition], [...scenePath, afterScene]);
+    if (found) {
+      return null;
+    }
+    const solution = this.findPath(afterScene, end, start, [...transitions, transition], [...scenePath, afterScene]);
+    if (solution) {
+      found = true;
+    }
+    return solution;
   })
   .reduce((a, b) => {
     if (a && a.transitions) {
@@ -321,5 +330,5 @@ WickedTransition.findPath = function(current, end, start = current, transitions 
       return a;
     }
     return b;
-  }, {});
+  }, null);
 };
