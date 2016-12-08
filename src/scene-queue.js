@@ -33,12 +33,15 @@ export default class SceneQueue extends EE {
       this.scene = newScene;
       return;
     }
-    let {transitions, scenePath} = WickedTransition.findPath(this.scene, newScene);
-    if (!transitions) {
+    let result = WickedTransition.findPath(this.scene, newScene);
+    if (!result) {
       console.error(`No path found, applying instantly.`);
-      transitions = [];
-      scenePath = [];
+      result = {
+        transitions: [],
+        scenePath: [],
+      };
     }
+    let {transitions, scenePath} = result;
     let currentScene = this.scene;
     log(`Applying path: [${transitions.map(t => t.name).join(', ')}]`)
     transitions.forEach((transition, i) => {
