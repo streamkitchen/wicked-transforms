@@ -11,6 +11,7 @@ import {
 } from "./default-scenes";
 import {ANIM_DURATION} from "./constants";
 import debug from "debug";
+import {combination} from "js-combinatorics";
 
 const log = debug("sk:wicked-transition");
 
@@ -74,23 +75,37 @@ export default class WickedTransition {
       });
     }
     else if (diff < 0) {
-      const sortedCurrentScene = {...currentScene};
-      sortedCurrentScene.regions = currentScene.regions.sort((r1, r2) => {
-        const score1 = endKeys.includes(r1.key) ? 0 : 1;
-        const score2 = endKeys.includes(r2.key) ? 0 : 1;
-        return score1 - score2;
-      });
-      candidateScenes.push({
-        ...currentScene,
-        regions: currentScene.regions.slice(0, this.after.regions.length).map((r, i) => {
-          return {
-            ...currentScene.regions[i],
-            ...after.regions[i],
-          }
-        }),
+      const combinations = combination(currentScene.regions, this.after.regions.length);
+      combinations.forEach((comb) => {
+        candidateScenes.push({
+          ...currentScene,
+          regions: comb.map((r, i) => {
+            return {
+              ...r,
+              ...after.regions[i],
+            }
+          }),
+        });
       });
     }
-    return candidateScenes;
+    // Only submit candidates that move horizontally or vertically, not both
+    return candidateScenes.filter((scene) => {
+      let movesVertical = false;
+      let movesHorizontal = false;
+      scene.regions.forEach((newRegion, i) => {
+        const currentRegion = currentScene.regions.find(r => r.key === newRegion.key);
+        if (!currentRegion) {
+          return;
+        }
+        if (currentRegion.x !== newRegion.x || currentRegion.width !== newRegion.width) {
+          movesHorizontal = true;
+        }
+        if (currentRegion.y !== newRegion.y || currentRegion.height !== newRegion.height) {
+          movesVertical = true;
+        }
+      })
+      return !(movesHorizontal && movesVertical);
+    });
   }
 
   go(fromScene, toScene) {
@@ -241,7 +256,7 @@ WickedTransition.addTransition({
 });
 
 WickedTransition.findPath = function(current, end, start = current, transitions = [], scenePath = []) {
-  log(transitions.map(t => t.name).join(" | "));
+  // log(transitions.map(t => t.name).join(" | "));
   const wCurrent = new WickedScene(current);
   // omfg do i remember how to do a BFS search algorithm???
   if (wCurrent.isEqual(end)) {
@@ -252,7 +267,7 @@ WickedTransition.findPath = function(current, end, start = current, transitions 
     if (same) {
       return {transitions, scenePath};
     }
-    console.info("Rejected for reasons of key mismatch");
+    // console.info("Rejected for reasons of key mismatch");
   }
   // umm... it works... but I think it's exhaustive or something...
   return WickedTransition._transitions
