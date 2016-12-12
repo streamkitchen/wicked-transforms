@@ -120,7 +120,6 @@ class TVScreen extends React.Component {
     }
     this.waitingFor -= 1;
     if (this.waitingFor === 0) {
-      console.log("Firing next scene!");
       this.sceneQueue.next();
     }
   }
