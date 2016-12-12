@@ -4,7 +4,6 @@ import ReactDOM from "react-dom";
 import React from "react";
 import {} from "normalize.css/normalize.css";
 import style from "./demo.scss";
-import wicked from "./wicked-transitions.js";
 import SceneQueue from "./scene-queue";
 import {ANIM_DURATION} from "./constants";
 import * as defaultScenes from "./default-scenes";
