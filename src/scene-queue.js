@@ -25,6 +25,12 @@ export default class SceneQueue extends EE {
     this.queue = [];
     this.scene = null;
     this._active = false;
+    this._holding = false;
+  }
+
+  next() {
+    this._holding = false;
+    this.processQueue();
   }
 
   pushScene(newScene) {
@@ -59,18 +65,15 @@ export default class SceneQueue extends EE {
     if (this._active === true) {
       return;
     }
+    if (this._holding === true) {
+      return;
+    }
     if (this.queue.length === 0) {
       return;
     }
     this._active = true;
+    this._holding = true;
     const scene = this.queue.shift();
-    if (typeof scene === "number") {
-      // log(`Delaying ${scene}ms, ${this.queue.length} items remain in queue`);
-      return setTimeout(() => {
-        this._active = false;
-        this.processQueue();
-      }, scene);
-    }
     // log(`Emitting scene, ${this.queue.length} items remain in queue`);
     this.emit("scene", scene);
     this._active = false;

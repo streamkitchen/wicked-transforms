@@ -78,6 +78,9 @@
   cursor: pointer;
   composes: HoverLight;
   display: flex;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000;
 
   span {
     margin: auto;

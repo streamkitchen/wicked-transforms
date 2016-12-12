@@ -93,9 +93,15 @@ class TVScreen extends React.Component {
   constructor() {
     super();
     this.state = {};
+    this.waitingFor = 0;
     this.sceneQueue = new SceneQueue();
     this.sceneQueue.on("scene", (scene) => {
+      if (typeof scene === "number") {
+        this.waitingFor = this.state.regions.length;
+        return;
+      }
       this.setState(scene);
+      this.sceneQueue.next();
     });
   }
 
@@ -108,8 +114,15 @@ class TVScreen extends React.Component {
     this.sceneQueue.pushScene(scene);
   }
 
-  handleTransition(transition) {
-
+  handleTransitionEnd(transition) {
+    if (this.waitingFor === 0) {
+      return;
+    }
+    this.waitingFor -= 1;
+    if (this.waitingFor === 0) {
+      console.log("Firing next scene!");
+      this.sceneQueue.next();
+    }
   }
 
   removeRegion(id) {
@@ -123,7 +136,13 @@ class TVScreen extends React.Component {
     return this.state.regions.sort((r1, r2) => {
       return r1.key > r2.key ? 1 : -1;
     }).map((region) => {
-      return <Region onClick={this.removeRegion.bind(this, region.key)} id={region.key} key={region.key} region={region} scene={this.state} />;
+      return <Region
+        onClick={this.removeRegion.bind(this, region.key)}
+        onTransitionEnd={this.handleTransitionEnd.bind(this, region.key)}
+        id={region.key}
+        key={region.key}
+        region={region}
+        scene={this.state} />;
     });
   }
 
@@ -137,6 +156,10 @@ class TVScreen extends React.Component {
 }
 
 class Region extends React.Component {
+  constructor() {
+    super();
+  }
+
   pct(float) {
     return `${float * 100}%`;
   }
@@ -157,11 +180,10 @@ class Region extends React.Component {
       transitionDuration: `${ANIM_DURATION}ms`,
     }
   }
-
   render() {
     const myStyle = this.getStyle();
     return (
-      <div onClick={this.props.onClick} style={myStyle} className={style.Region}>
+      <div onTransitionEnd={this.props.onTransitionEnd} onClick={this.props.onClick} style={myStyle} className={style.Region}>
         <span>{this.props.id}</span>
       </div>
     );
