@@ -50,6 +50,9 @@ export default class WickedScene {
 
   _normalizeScene(scene) {
     const scale = 10000000;
+    if (scene.width === scale && scene.height === scale) {
+      return scene;
+    }
     return {
       ...scene,
       width: scale,
