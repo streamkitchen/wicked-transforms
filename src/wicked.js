@@ -2,9 +2,20 @@
 import * as defaultScenes from "./default-scenes";
 import WickedTransition, {instantScene} from "./wicked-transition";
 import debug from "debug";
-import SceneViewer from "./scene-viewer";
 
-export {SceneViewer};
+let hasReact = false;
+try {
+  require("react");
+  hasReact = true;
+}
+catch(e) {
+  // No problem, React is an optional dependency
+}
+
+if (hasReact) {
+  const SceneViewer = require("./scene-viewer").default;
+  exports.SceneViewer = SceneViewer;
+}
 
 const log = debug("sk:wicked");
 

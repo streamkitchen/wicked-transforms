@@ -1,10 +1,11 @@
 {
   "name": "wicked-transitions",
-  "version": "1.0.0",
+  "version": "0.0.7",
   "description": "Interesting transitions between things",
-  "main": "dist/wicked-transitions.js",
+  "main": "dist/wicked.js",
   "scripts": {
     "test": "echo 'none for now'",
+    "prepublish": "npm run build",
     "lint": "eslint src",
     "dev": "webpack-dev-server --history-api-fallback --progress --colors --inline --host 0.0.0.0 --port 9876",
     "build": "npm run lint && babel -d dist src"

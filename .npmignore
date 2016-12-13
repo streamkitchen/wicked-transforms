@@ -1,0 +1,7 @@
+node_modules
+npm-debug.log*
+jest
+demo
+docs
+__tests__
+webpack.config.js
