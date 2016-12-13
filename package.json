@@ -5,8 +5,9 @@
   "main": "dist/wicked-transitions.js",
   "scripts": {
     "test": "echo 'none for now'",
+    "lint": "eslint src",
     "dev": "webpack-dev-server --history-api-fallback --progress --colors --inline --host 0.0.0.0 --port 9876",
-    "build": "babel -d dist src"
+    "build": "npm run lint && babel -d dist src"
   },
   "jest": {
     "verbose": true,
@@ -18,11 +19,14 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "babel-core": "^6.18.2",
+    "babel-eslint": "^7.1.1",
     "babel-loader": "^6.2.8",
     "babel-preset-react": "^6.16.0",
     "babel-preset-streamkitchen": "0.0.2",
     "copy-webpack-plugin": "^4.0.1",
     "css-loader": "^0.26.0",
+    "eslint": "^3.12.1",
+    "eslint-plugin-react": "^6.8.0",
     "file-loader": "^0.9.0",
     "jest": "^17.0.3",
     "node-sass": "^3.13.0",

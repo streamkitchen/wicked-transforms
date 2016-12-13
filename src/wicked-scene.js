@@ -22,9 +22,6 @@ export default class WickedScene {
     const normalized = this._normalizeScene(newScene);
     // We don't? Okay. Copy everything into ourself and freeze.
     this.regions = Object.freeze(normalized.regions.map(({x, y, width, height}) => {
-      if (width === 16) {
-        debugger;
-      }
       return Object.freeze({x, y, width, height});
     }));
     this.width = normalized.width;
@@ -94,14 +91,6 @@ export default class WickedScene {
         thisRegion.width === otherRegion.width &&
         thisRegion.height === otherRegion.height;
     });
-  }
-
-  _reduce(num, den) {
-    var gcd = function gcd(a,b){
-      return b ? gcd(b, a%b) : a;
-    };
-    gcd = gcd(num,den);
-    return [num/gcd, den/gcd];
   }
 }
 

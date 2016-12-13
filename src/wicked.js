@@ -20,9 +20,9 @@ export function getScene(regions) {
       return {
         ...regions[i],
         ...scene.regions[i],
-      }
+      };
     }),
-  }
+  };
 }
 
 export function getTransition(scene, newScene) {
@@ -35,7 +35,7 @@ export function getTransition(scene, newScene) {
   }
   let {transitions, scenePath} = result;
   let currentScene = scene;
-  log(`Applying path: [${transitions.map(t => t.name).join(', ')}]`);
+  log(`Applying path: [${transitions.map(t => t.name).join(", ")}]`);
   const queue = [];
   transitions.forEach((transition, i) => {
     const stubScene = transition.go(currentScene, scenePath[i]);

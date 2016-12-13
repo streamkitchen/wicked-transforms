@@ -25,7 +25,7 @@ export function transitionScene(scene) {
       bezier: [.25, 1, .25, 1],
     },
   };
-};
+}
 
 export function instantScene(scene) {
   return {
@@ -35,7 +35,7 @@ export function instantScene(scene) {
       bezier: [0, 0, 0, 0],
     },
   };
-};
+}
 
 
 export default class WickedTransition {
@@ -101,7 +101,7 @@ export default class WickedTransition {
             };
           }),
         });
-      })
+      });
     }
     else if (diff < 0) {
       const combinations = combination(currentScene.regions, this.after.regions.length);
@@ -112,7 +112,7 @@ export default class WickedTransition {
             return {
               ...r,
               ...after.regions[i],
-            }
+            };
           }),
         });
       });
@@ -132,7 +132,7 @@ export default class WickedTransition {
         if (currentRegion.y !== newRegion.y || currentRegion.height !== newRegion.height) {
           movesVertical = true;
         }
-      })
+      });
       return !(movesHorizontal && movesVertical);
     });
   }
@@ -156,8 +156,6 @@ export default class WickedTransition {
       .filter(k => !toKeys.includes(k))
       .map(k => fromScene.regions.find(r => r.key === k));
     if (newRegions.length === 0) {
-      console.log(this.name);
-      console.log(fromScene, toScene);
       throw new Error("no new regions provided");
     }
     let onTop = true;
@@ -215,7 +213,7 @@ export default class WickedTransition {
         r.y = -r.height;
       }
       else if (comesFrom === "bottom") {
-        r.y = height
+        r.y = height;
       }
       else if (comesFrom === "middle") {
         r.zIndex = 1;
@@ -310,7 +308,7 @@ const _evaluate = function(current, end) {
     });
   }
   return null;
-}
+};
 
 WickedTransition.findPath = function(start, end) {
   const queue = [];
@@ -367,7 +365,7 @@ WickedTransition.findPathDFS = function(current, end, start = current, transitio
     return [transition, candidateScenes];
   })
   .reduce((arr, [transition, candidateScenes]) => {
-    return arr.concat(candidateScenes.map(s => [transition, s]))
+    return arr.concat(candidateScenes.map(s => [transition, s]));
   }, [])
   // That thing returns arrays, flatten them
   .map(([transition, afterScene]) => {
