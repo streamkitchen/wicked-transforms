@@ -9,7 +9,7 @@ var resolve = function(x) {
 
 module.exports = {
   context: __dirname,
-  entry: "./src/demo",
+  entry: "./demo/wicked-transition-demo.jsx",
   output: {
     filename: "bundle.js", //this is the default name, so you can skip it
     path: "docs",

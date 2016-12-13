@@ -1,0 +1,96 @@
+
+:global {
+  body {
+    background-color: #333;
+    color: white;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+
+  html, body, main {
+    height: 100%;
+  }
+
+  main {
+    box-sizing: border-box;
+    display: flex;
+    padding: 1em;
+  }
+}
+
+.Container {
+  flex-grow: 1;
+  width: 100%;
+  margin: auto;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  flex-direction: column;
+}
+
+.HoverLight {
+  &:hover {
+    &::after {
+      content: " ";
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(255, 255, 255, 0.3);
+      display: block;
+      cursor: pointer;
+    }
+  }
+}
+
+.SceneWrapper {
+  flex-grow: 1;
+  flex-shrink: 1;
+  width: 100%;
+  display: flex;
+}
+
+.CoolButtons {
+  composes: HoverLight;
+  position: relative;
+  font-size: 2em;
+  margin-top: 1em;
+  background-color: black;
+  color: white;
+  border: none;
+  width: 100px;
+  height: 100px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.PlusButton {
+  composes: CoolButtons;
+}
+
+.MinusButton {
+  composes: CoolButtons;
+}
+
+.Region {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  composes: HoverLight;
+  display: flex;
+  user-select: none;
+
+  span {
+    margin: auto;
+    font-size: 2em;
+    text-shadow:
+     -1px -1px 0 #000,
+      1px -1px 0 #000,
+      -1px 1px 0 #000,
+       1px 1px 0 #000;
+  }
+}

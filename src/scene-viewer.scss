@@ -1,0 +1,26 @@
+
+.SceneViewerContainer {
+  background-color: rgba(0, 255, 0, 0.2);
+  position: relative;
+  display: flex;
+  margin: auto;
+}
+
+.SpacerImage {
+  max-width: 100%;
+  margin: auto;
+  visibility: hidden;
+}
+
+.SceneViewer {
+  position: absolute;
+  background-color: black;
+  margin: auto;
+}
+
+.Region {
+  position: absolute;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000;
+}
