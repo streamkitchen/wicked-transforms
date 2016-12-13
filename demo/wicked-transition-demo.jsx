@@ -5,7 +5,7 @@ import {} from "normalize.css";
 import {} from "./index.html.mustache";
 import style from "./wicked-transition-demo.scss";
 import SceneViewer from "../src/scene-viewer";
-import {getScene} from "../src/wicked";
+import {getScene, getTransition} from "../src/wicked";
 import leftPad from "left-pad";
 
 let _id = 0;
@@ -14,6 +14,28 @@ const uid = function() {
   _id += 1;
   return ret;
 };
+
+class Region extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+
+  // Rendering
+  renderStyle() {
+    return {
+      backgroundColor: this.props.region.backgroundColor
+    }
+  }
+
+  render() {
+    // onClick={this.removeRegion.bind(this, r.key)}
+    return (
+      <div onClick={() => this.props.onClick(this.props.region.key)} className={style.Region} style={this.renderStyle()}>
+        <span>{this.props.region.key}</span>
+      </div>
+    );
+  }
+}
 
 export default class WickedTransitionDemo extends React.Component {
   constructor() {
@@ -48,33 +70,19 @@ export default class WickedTransitionDemo extends React.Component {
   resetRegions(newRegions) {
     const scene = getScene(newRegions);
     if (scene) {
-      this.setState({scene});
+      const transitions = getTransition(this.state.scene, scene);
+      this.setState({scene, transitions});
     }
-  }
-
-  // Rendering
-
-  renderStyle(r) {
-    return {
-      backgroundColor: r.backgroundColor
-    }
-  }
-
-  renderRegion(r) {
-    return (
-      <div className={style.Region} onClick={this.removeRegion.bind(this, r.key)} style={this.renderStyle(r)} key={r.key}>
-        <span>{r.key}</span>
-      </div>
-    );
   }
 
   render () {
+    const regionProps = {
+      onClick: ::this.removeRegion
+    };
     return (
       <div className={style.Container}>
         <div className={style.SceneWrapper}>
-          <SceneViewer scene={this.state.scene} transitions={this.state.transitions}>
-            {this.state.scene.regions.map(r => this.renderRegion(r))}
-          </SceneViewer>
+          <SceneViewer scene={this.state.scene} transitions={this.state.transitions} regionProps={regionProps} component={Region} />
         </div>
         <div className={style.Buttons}>
           <button onClick={::this.addRegion} className={style.PlusButton}>+</button>

@@ -17,6 +17,27 @@ const log = debug("sk:wicked-transition");
 
 const transitions = {};
 
+export function transitionScene(scene) {
+  return {
+    scene: scene,
+    transition: {
+      duration: ANIM_DURATION,
+      bezier: [.25, 1, .25, 1],
+    },
+  };
+};
+
+export function instantScene(scene) {
+  return {
+    scene: scene,
+    transition: {
+      duration: 0,
+      bezier: [0, 0, 0, 0],
+    },
+  };
+};
+
+
 export default class WickedTransition {
   constructor({name, before, after, startAnim, endAnim, isReversed}) {
     this.name = name;
@@ -209,10 +230,10 @@ export default class WickedTransition {
       ]
     };
     if (!this.isReversed) {
-      return [stubScene, toScene, ANIM_DURATION];
+      return [instantScene(stubScene), transitionScene(toScene)];
     }
     else {
-      return [stubScene, ANIM_DURATION, toScene];
+      return [transitionScene(stubScene), instantScene(fromScene)];
     }
   }
 }
