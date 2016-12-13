@@ -4,8 +4,7 @@ import ReactDOM from "react-dom";
 import {} from "normalize.css";
 import {} from "./index.html.mustache";
 import style from "./wicked-transition-demo.scss";
-import SceneViewer from "../src/scene-viewer";
-import {getScene, getTransition} from "../src/wicked";
+import {getScene, getTransition, SceneViewer} from "../src/wicked";
 import leftPad from "left-pad";
 
 let _id = 0;
