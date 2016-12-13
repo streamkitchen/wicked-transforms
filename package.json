@@ -1,6 +1,6 @@
 {
   "name": "wicked-transitions",
-  "version": "0.0.7",
+  "version": "0.0.9",
   "description": "Interesting transitions between things",
   "main": "dist/wicked.js",
   "scripts": {
@@ -8,7 +8,7 @@
     "prepublish": "npm run build",
     "lint": "eslint src",
     "dev": "webpack-dev-server --history-api-fallback --progress --colors --inline --host 0.0.0.0 --port 9876",
-    "build": "npm run lint && babel -d dist src"
+    "build": "npm run lint && babel -d dist --copy-files src"
   },
   "jest": {
     "verbose": true,
@@ -48,6 +48,7 @@
     "js-combinatorics": "^0.5.2",
     "left-pad": "^1.1.3",
     "lodash.throttle": "^4.1.1",
+    "node-uuid": "^1.4.7",
     "wolfy87-eventemitter": "^5.1.0"
   }
 }

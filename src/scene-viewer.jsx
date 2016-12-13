@@ -21,6 +21,7 @@ export default class SceneViewer extends React.Component{
     this.sceneQueue = [];
     this.resize = throttle(::this.resize, 25);
     this.queueTimeout = null;
+    this.seenTransitions = new Set();
   }
 
   ref(ref) {
@@ -28,7 +29,11 @@ export default class SceneViewer extends React.Component{
   }
 
   componentWillReceiveProps(nextProps) {
-    this.sceneQueue.push(...nextProps.transitions);
+    this.sceneQueue.push(...nextProps.transitions.filter((transition) => {
+      const alreadySeen = this.seenTransitions.has(transition.key);
+      this.seenTransitions.add(transition.key);
+      return !alreadySeen;
+    }));
     this.processQueue();
   }
 
@@ -58,6 +63,8 @@ export default class SceneViewer extends React.Component{
   componentDidMount() {
     window.addEventListener("resize", this.resize);
     this.resize();
+    // Hacktown USA
+    setTimeout(this.resize, 1000);
   }
 
   componentWillUnmount() {

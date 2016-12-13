@@ -12,6 +12,7 @@ import {
 import {ANIM_DURATION} from "./constants";
 import debug from "debug";
 import {combination} from "js-combinatorics";
+import {v4} from "node-uuid";
 
 const log = debug("sk:wicked-transition");
 
@@ -19,6 +20,7 @@ const transitions = {};
 
 export function transitionScene(scene) {
   return {
+    key: v4(),
     scene: scene,
     transition: {
       duration: ANIM_DURATION,
@@ -29,6 +31,7 @@ export function transitionScene(scene) {
 
 export function instantScene(scene) {
   return {
+    key: v4(),
     scene: scene,
     transition: {
       duration: 0,

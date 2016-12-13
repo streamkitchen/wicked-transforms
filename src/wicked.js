@@ -29,7 +29,8 @@ export function getScene(regions) {
   const scene = possibleScenes[0];
   // Return a version of the scene with the locations overridden by our provided one
   return {
-    ...scene,
+    width: scene.width,
+    height: scene.height,
     regions: scene.regions.map((r, i) => {
       return {
         ...regions[i],
@@ -40,6 +41,8 @@ export function getScene(regions) {
 }
 
 export function getTransition(scene, newScene) {
+  scene = {width: scene.width, height: scene.height, regions: scene.regions};
+  newScene = {width: newScene.width, height: newScene.height, regions: newScene.regions};
   let result = WickedTransition.findPath(scene, newScene);
   if (!result) {
     result = {
