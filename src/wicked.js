@@ -2,6 +2,9 @@
 import * as defaultScenes from "./default-scenes";
 import WickedTransition, {instantScene} from "./wicked-transition";
 import debug from "debug";
+import SceneViewer from "./scene-viewer";
+
+export {SceneViewer};
 
 const log = debug("sk:wicked");
 
